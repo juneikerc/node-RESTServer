@@ -14,7 +14,8 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 //Routes
-app.use( require('./routes/usuario.js') )
+app.use( require('./routes/index.js') )
+
 
 
 mongoose.connect(process.env.URLBD,( err ) => {

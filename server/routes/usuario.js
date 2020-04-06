@@ -2,11 +2,14 @@ const express = require('express')
 const bcrypt = require('bcrypt')
 const _ = require('underscore')
 const Usuario = require('../models/usuario')
+const { verificaToken, verificaAdminRole  } = require('../middlewares/autenticacion')
 const app = express()
 
 //#########GET USER#################
 
-app.get('/usuario', (req,res) => {
+app.get('/usuario', verificaToken, (req,res) => {
+  
+  // return res.json({usuario: req.usuario})
 
   let desde = req.query.desde || 0
   desde = Number(desde)
@@ -14,22 +17,22 @@ app.get('/usuario', (req,res) => {
   limite = Number(limite)
 
   Usuario.find({estado: true},'nombre email role estado google img')
-          .skip(desde)
-          .limit(limite)
-          .exec((err, usuarios) => {
-            
-            if(err) {
-              return res.status(400).json({ok:false,err})
-            }
-            
-            res.json({ok:true, usuarios})
-          })
+    .skip(desde)
+    .limit(limite)
+    .exec((err, usuarios) => {
+      
+      if(err) {
+        return res.status(400).json({ok:false,err})
+      }
+      
+      res.json({ok:true, usuarios})
+    })
  
 })
 
 //#########POST USER#################
 
-app.post('/usuario', (req,res) => {
+app.post('/usuario', [verificaToken, verificaAdminRole],  (req,res) => {
   
   const { nombre, email, password, role } = req.body 
   
@@ -55,7 +58,7 @@ app.post('/usuario', (req,res) => {
 
 //#########PUT USER#################
 
-app.put('/usuario/:id', (req,res) => {
+app.put('/usuario/:id', [verificaToken, verificaAdminRole], (req,res) => {
 
   const { id } = req.params
   const body = _.pick(req.body, ['nombre','email','img','role','estado'] )
@@ -100,7 +103,7 @@ app.put('/usuario/:id', (req,res) => {
 // })
 
 //delete cambiando el estado
-app.delete('/usuario/:id', (req,res) => {
+app.delete('/usuario/:id',[verificaToken, verificaAdminRole], (req,res) => {
 
   const { id } = req.params
   const { estado } = req.body
